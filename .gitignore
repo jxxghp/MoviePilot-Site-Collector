@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+build/
+dist/
+*.pyc
+moviepilot-site-capture-*.zip
+collector-release-tags.txt
+collector-draft-state.txt
+collector-release-notes.md
+release-assets/

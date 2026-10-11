@@ -16,14 +16,14 @@ raise SystemExit(0 if sys.version_info >= (3, 14) else 1)
 PY
 }
 
-# 从当前源码目录、环境变量或脚本位置查找 MoviePilot 根目录。
+# 从当前源码目录、环境变量或脚本位置查找独立采集器根目录。
 find_project_root() {
   local candidate=""
   local source_path="${BASH_SOURCE[0]:-}"
   if [[ -n "$source_path" && -f "$source_path" ]]; then
     SCRIPT_DIR="$(cd "$(dirname "$source_path")" && pwd)"
   fi
-  for candidate in "${MOVIEPILOT_ROOT:-}" "$ORIGINAL_DIR" "${SCRIPT_DIR:+$SCRIPT_DIR/..}"; do
+  for candidate in "${MOVIEPILOT_COLLECTOR_ROOT:-}" "${MOVIEPILOT_ROOT:-}" "$ORIGINAL_DIR" "${SCRIPT_DIR:+$SCRIPT_DIR/..}"; do
     if [[ -n "$candidate" && -f "$candidate/scripts/site_adapter_collector.py" ]]; then
       PROJECT_ROOT="$(cd "$candidate" && pwd)"
       return 0
@@ -74,19 +74,19 @@ restore_terminal_input() {
   fi
 }
 
-# 定位本地项目运行环境后启动随发行包提供的采集器。
+# 定位独立采集器虚拟环境后启动源码入口。
 main() {
   if ! find_project_root; then
-    echo "未找到本地 MoviePilot 源码或安装目录，请在 MoviePilot 目录中运行此脚本。" >&2
+    echo "未找到采集器源码，请在 MoviePilot-Site-Collector 目录中运行此脚本。" >&2
     exit 1
   fi
   if ! find_python; then
-    echo "未找到 Python 3.11 或更高版本，请先安装 Python。" >&2
+    echo "未找到 Python 3.14 或更高版本，请先安装 Python。" >&2
     exit 1
   fi
 
   if ! project_runtime_ready; then
-    echo "本地 Python 环境缺少采集器依赖，请下载采集器独立 Release：https://github.com/jxxghp/MoviePilot/releases?q=tag%3Asite-adapter-collector-v1&expanded=true" >&2
+    echo "本地 Python 环境缺少采集器依赖，请下载采集器独立 Release：https://github.com/jxxghp/MoviePilot-Site-Collector/releases/latest" >&2
     exit 1
   fi
   COLLECTOR_PATH="$PROJECT_ROOT/scripts/site_adapter_collector.py"

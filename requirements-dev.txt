@@ -1,0 +1,3 @@
+-r scripts/site_adapter_collector_requirements.txt
+pytest>=8,<10
+ruamel.yaml>=0.18,<0.19

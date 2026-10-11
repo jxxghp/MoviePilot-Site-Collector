@@ -6,7 +6,7 @@
 
 普通用户只需准备两样东西：目标站点账号，以及已安装的 Chrome、Edge 或 Chromium。无需安装 Python、Git、MoviePilot、Docker，也不需要查看 HTML、复制 Cookie 或填写 User-Agent。
 
-1. 从官方 [站点采集器独立 Release](https://github.com/jxxghp/MoviePilot/releases?q=tag%3Asite-adapter-collector-v1&expanded=true) 选择最新采集器版本，下载与 Windows、macOS 或 Linux 对应的程序；各系统文件名见下方下载说明。
+1. 从官方 [站点采集器独立 Release](https://github.com/jxxghp/MoviePilot-Site-Collector/releases/latest) 选择最新采集器版本，下载与 Windows、macOS 或 Linux 对应的程序；各系统文件名见下方下载说明。
 2. 运行采集器，只输入站点首页地址，例如 `https://tracker.example.com`。
 3. 程序会打开一个临时浏览器窗口。在这个窗口里正常登录站点，搜索一个能返回至少 3 条结果的常见关键词，并保持搜索结果页打开。
 4. 回到采集器按回车。程序会自动识别搜索地址、关键词、Cookie 和 User-Agent，完成本地裁剪与脱敏后生成 ZIP。
@@ -17,9 +17,13 @@
 
 ## 开发者源码入口
 
-已经有 MoviePilot 源码和 Python 环境的开发者，也可以在项目目录执行：
+源码和发布流程均位于独立仓库。开发者准备 Python 3.14+ 后，可以执行：
 
 ```bash
+git clone https://github.com/jxxghp/MoviePilot-Site-Collector.git
+cd MoviePilot-Site-Collector
+python3.14 -m venv .venv
+.venv/bin/python -m pip install -r scripts/site_adapter_collector_requirements.txt
 bash scripts/collect-site-adapter.sh
 ```
 
@@ -53,7 +57,7 @@ bash scripts/collect-site-adapter.sh
 
 ## 提交 Feature Request
 
-在 GitHub 创建“功能改进” Issue，类型选择“站点适配”，然后把生成的 `moviepilot-site-capture-*.zip` 直接拖入“站点适配采集文件”输入框。
+在 [MoviePilot 主仓创建“功能改进” Issue](https://github.com/jxxghp/MoviePilot/issues/new?template=feature_request.yml)，类型选择“站点适配”，然后把生成的 `moviepilot-site-capture-*.zip` 直接拖入“站点适配采集文件”输入框。采集器自身的问题可在本仓库提交 Issue。
 
 Feature Request 及其附件是公开内容。提交前请先在本地解压 ZIP，确认根目录只有上述四个文件，并逐一预览确认没有站点账号、搜索隐私或其他不希望公开的信息。
 

@@ -1,0 +1,33 @@
+name: Collector Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            requirements-dev.txt
+            scripts/site_adapter_collector_requirements.txt
+      - name: Install isolated test environment
+        run: |
+          uv venv .venv
+          uv pip install --python .venv/bin/python --requirement requirements-dev.txt
+      - name: Test collector and release boundaries
+        run: .venv/bin/python -m pytest -q

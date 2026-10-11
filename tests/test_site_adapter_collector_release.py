@@ -23,7 +23,7 @@ def _git(repository: Path, *arguments: str) -> str:
 @pytest.fixture
 def collector_repository(tmp_path: Path) -> Path:
     """创建已发布 1.0.1 的临时采集器仓库。"""
-    _git(tmp_path, "init", "-b", "v3")
+    _git(tmp_path, "init", "-b", "main")
     for relative in release.RELEASE_PATHS:
         path = tmp_path / relative
         if relative == "scripts/collector":
@@ -113,12 +113,12 @@ def test_stamp_sets_runtime_and_manifest_version(tmp_path: Path):
 
 
 def test_workflow_separates_releases_and_pins_all_build_sources():
-    """工作流只跟随采集器输入，三平台成功才发布且保留主程序 latest。"""
+    """工作流只跟随采集器输入，三平台成功才在独立仓库发布并更新采集器 latest。"""
     workflow = YAML(typ="safe").load(
         (PROJECT_ROOT / ".github/workflows/site-adapter-collector.yml").read_text(encoding="utf-8"),
     )
     assert "release" not in workflow["on"]
-    assert workflow["on"]["push"]["branches"] == ["v3"]
+    assert workflow["on"]["push"]["branches"] == ["main"]
     paths = workflow["on"]["push"]["paths"]
     assert set(paths) == set(release.RELEASE_PATHS) - {"scripts/collector"} | {"scripts/collector/**"}
     assert workflow["concurrency"]["cancel-in-progress"] is False
@@ -134,7 +134,7 @@ def test_workflow_separates_releases_and_pins_all_build_sources():
     assert "release.py stamp" in build_step["run"]
     publish = jobs["publish"]["steps"][-1]["run"]
     assert "--target \"$SOURCE_SHA\" --draft" in publish
-    assert "--draft=false --latest=false" in publish
+    assert "--draft=false --latest=true" in publish
     assert "--json isDraft,targetCommitish" in publish
     assert '"$draft_source" != "$SOURCE_SHA"' in publish
     assert '"$RELEASE_TAG^{commit}"' not in publish
@@ -187,7 +187,7 @@ def test_draft_retry_checks_source_without_requiring_git_tag(
         assert result.returncode == 0, result.stderr
         calls = log.read_text(encoding="utf-8")
         assert "release upload site-adapter-collector-v1.0.2" in calls
-        assert "--draft=false --latest=false" in calls
+        assert "--draft=false --latest=true" in calls
     else:
         assert result.returncode != 0
         assert not log.exists()

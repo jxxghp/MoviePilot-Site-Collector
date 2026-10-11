@@ -3,7 +3,7 @@ name: Site Adapter Collector
 on:
   push:
     branches:
-      - v3
+      - main
     paths:
       - scripts/site_adapter_collector.py
       - scripts/site_adapter_collector.spec
@@ -31,7 +31,7 @@ permissions:
 jobs:
   prepare:
     name: Check collector changes and select independent version
-    if: github.ref == 'refs/heads/v3'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.version.outputs.changed }}
@@ -43,8 +43,8 @@ jobs:
       - name: Checkout current collector source
         uses: actions/checkout@v7
         with:
-          # 排队期间可能已有新提交；统一构建当前 v3，避免旧任务回退采集器。
-          ref: v3
+          # 排队期间可能已有新提交；统一构建当前 main，避免旧任务回退采集器。
+          ref: main
           fetch-depth: 0
           fetch-tags: false
 
@@ -52,6 +52,13 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: '3.14'
+
+      # 发布准备时测试同一源码，测试失败不得构建或发布。
+      - name: Test collector and release boundaries
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --requirement requirements-dev.txt
+          .venv/bin/python -m pytest -q
 
       - name: Select collector release version
         id: version
@@ -219,7 +226,7 @@ jobs:
           notes = (
               f"MoviePilot 站点适配采集器 {version}，独立于后端版本发布。\n\n"
               "下载与系统对应的程序及同名 `.sha256` 校验文件。\n\n"
-              "[使用说明](https://github.com/jxxghp/MoviePilot/blob/v3/docs/site-adapter-collector-release.md)\n\n"
+              "[使用说明](https://github.com/jxxghp/MoviePilot-Site-Collector/blob/main/docs/site-adapter-collector-release.md)\n\n"
               f"源码提交：`{os.environ['SOURCE_SHA']}`\n\n## 变更记录\n\n{records}\n"
           )
           Path('collector-release-notes.md').write_text(notes, encoding='utf-8')
@@ -250,8 +257,8 @@ jobs:
             gh release create "$RELEASE_TAG" release-assets/* \
               --repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" --draft \
               --title "Site Adapter Collector v$COLLECTOR_VERSION" \
-              --notes-file collector-release-notes.md --latest=false
+              --notes-file collector-release-notes.md --latest=true
           fi
           # 全部附件上传完成才转正式发布，上传失败不会消耗正式版本。
           gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
-            --draft=false --latest=false
+            --draft=false --latest=true
